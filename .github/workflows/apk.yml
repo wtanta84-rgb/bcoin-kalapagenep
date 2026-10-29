@@ -6,82 +6,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
       - uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
           
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        
-      - name: Build Real WebView APK
+      - name: Build APK
         run: |
-          mkdir -p BcoinApp/app/src/main/java/com/kalapagenep/bcoin
-          
-          cat > BcoinApp/app/build.gradle << 'GRADLE'
-          plugins { id 'com.android.application' }
-          android {
-              namespace 'com.kalapagenep.bcoin'
-              compileSdk 34
-              defaultConfig {
-                  applicationId "com.kalapagenep.bcoin"
-                  minSdk 21
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0"
-              }
-          }
-          GRADLE
-          
-          cat > BcoinApp/settings.gradle << 'SET'
-          include ':app'
-          SET
-          
-          cat > BcoinApp/app/src/main/java/com/kalapagenep/bcoin/MainActivity.java << 'JAVA'
-          package com.kalapagenep.bcoin;
-          import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          public class MainActivity extends Activity {
-              protected void onCreate(Bundle b){
-                  super.onCreate(b);
-                  WebView w = new WebView(this);
-                  w.getSettings().setJavaScriptEnabled(true);
-                  w.getSettings().setDomStorageEnabled(true);
-                  w.setWebViewClient(new WebViewClient());
-                  w.loadUrl("https://wtanta84-rgb.github.io/bcoin-kalapagenep/");
-                  setContentView(w);
-              }
-          }
-          JAVA
-          
-          cat > BcoinApp/app/src/main/AndroidManifest.xml << 'MAN'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kalapagenep.bcoin">
-              <uses-permission android:name="android.permission.INTERNET"/>
-              <application android:label="B-Coin Kalapagenep" android:theme="@android:style/Theme.NoTitleBar">
-                  <activity android:name=".MainActivity" android:exported="true">
-                      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          MAN
-          
-          cd BcoinApp
-          chmod +x gradlew || echo "no gradlew, using direct build"
-          ls -R
-          
-      - name: Create simple APK via Capacitor method
-        run: |
-          npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "B-Coin Kalapagenep" com.kalapagenep.bcoin --web-dir=.
+          echo '{"appId":"com.kalapagenep.bcoin","appName":"B-Coin Kalapagenep","webDir":".","bundledWebRuntime":false}' > capacitor.config.json
           npx cap add android
-          npx cap copy android
-          cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+          npx cap copy
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
           
       - uses: actions/upload-artifact@v4
         with:
           name: B-Coin-Kalapagenep-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
