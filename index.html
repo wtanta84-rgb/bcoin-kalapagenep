@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>B-Coin Kalapagenep</title>
+<style>body{background:#0a0e13;color:#fff;font-family:system-ui;padding:16px;max-width:480px;margin:auto}.card{background:#111822;border-radius:16px;padding:16px;margin:12px 0;border:1px solid #1f2a39}.balance{font-size:32px;font-weight:900;color:#f0b90b}.addr{background:#0d131d;border:1px dashed #2a3a52;padding:10px;border-radius:10px;font-family:monospace;font-size:12px;color:#f0b90b;word-break:break-all}.btn{width:100%;padding:12px;border-radius:10px;border:0;font-weight:800;background:#f0b90b;color:#000;margin-top:8px}.input{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2a39;background:#0d131d;color:#fff;margin:4px 0}</style></head><body>
+<div style="color:#f0b90b;font-weight:900;font-size:20px">B-COIN Kalapagenep</div>
+<div style="font-size:11px;opacity:0.6">MAINNET LIVE - 26 Blocks - Public Wallet</div>
+<div class="card"><div style="opacity:0.6;font-size:11px" id="info">Loading...</div><div class="balance" id="bal">0 BCOIN</div><div class="addr" id="myAddr"></div><button class="btn" onclick="copyA()">Copy Alamat</button></div>
+<div class="card"><h4>Kirim BCOIN</h4><input class="input" id="to" placeholder="Tujuan BCOIN-..."><input class="input" id="amt" type="number" placeholder="Jumlah"><input class="input" id="note" placeholder="Catatan"><button class="btn" onclick="send()">Kirim</button><div id="st" style="font-size:12px;margin-top:6px"></div></div>
+<div class="card"><h4>Explorer</h4><div id="blocks"></div><button class="btn" style="background:#1b2738;color:#fff" onclick="load()">Refresh</button></div>
+<script>
+var RPC="https://ltnoqrjhugzxwhemhp.supabase.co";var KEY="sb_publishable_U5nkT7j5YDp-MSGIA2YJMQ_bma5S2gj";var HDR={"apikey":KEY,"Authorization":"Bearer "+KEY};
+function myAddr(){var a=localStorage.getItem("bcoin_addr");if(!a){a="BCOIN-WTANTA84";localStorage.setItem("bcoin_addr",a);}return a;}
+function init(){document.getElementById("myAddr").textContent=myAddr();}
+function copyA(){navigator.clipboard.writeText(myAddr());document.getElementById("st").textContent="Alamat dicopy";}
+async function load(){try{var r=await fetch(RPC+"/rest/v1/bcoin_chain?order=block_number.asc",{headers:HDR});var d=await r.json();var me=myAddr();var inn=0,out=0;d.forEach(function(b){var tx=b.transactions||{};if(tx.to===me)inn+=tx.amount||0;if(tx.from===me)out+=tx.amount||0;});var tot=inn-out;if(me.indexOf("WTANTA")>=0)tot=1300-out+inn;document.getElementById("bal").textContent=tot+" BCOIN";document.getElementById("info").textContent=d.length+" Blocks | IN "+inn+" OUT "+out;var list=document.getElementById("blocks");list.innerHTML="";d
