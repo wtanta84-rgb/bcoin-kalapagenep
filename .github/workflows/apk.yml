@@ -7,72 +7,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.4
       - uses: android-actions/setup-android@v3
       - name: Build APK
         run: |
-          rm -rf app build gradle gradlew settings.gradle build.gradle
           mkdir -p app/src/main/java/com/kalapagenep/bcoin
           echo "include ':app'" > settings.gradle
-          cat > build.gradle << 'BG'
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.1.4' }
-          }
-          allprojects { repositories { google(); mavenCentral() } }
-          BG
-          cat > app/build.gradle << 'APP'
-          plugins { id 'com.android.application' }
-          android {
-              namespace 'com.kalapagenep.bcoin'
-              compileSdk 34
-              defaultConfig {
-                  applicationId "com.kalapagenep.bcoin"
-                  minSdk 21
-                  targetSdk 34
-                  versionCode 7
-                  versionName "1.0"
-              }
-              buildTypes { release { minifyEnabled false } }
-          }
-          APP
-          cat > app/src/main/java/com/kalapagenep/bcoin/MainActivity.java << 'JAVA'
-          package com.kalapagenep.bcoin;
-          import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          public class MainActivity extends Activity {
-              protected void onCreate(Bundle b){
-                  super.onCreate(b);
-                  WebView w=new WebView(this);
-                  w.getSettings().setJavaScriptEnabled(true);
-                  w.getSettings().setDomStorageEnabled(true);
-                  w.setWebViewClient(new WebViewClient());
-                  w.loadUrl("https://wtanta84-rgb.github.io/bcoin-kalapagenep/");
-                  setContentView(w);
-              }
-          }
-          JAVA
+          printf "buildscript{\n repositories{google();mavenCentral()}\n dependencies{classpath 'com.android.tools.build:gradle:8.1.4'}\n}\nallprojects{repositories{google();mavenCentral()}}" > build.gradle
+          printf "plugins{id 'com.android.application'}\nandroid{\n namespace 'com.kalapagenep.bcoin'\n compileSdk 34\n defaultConfig{applicationId 'com.kalapagenep.bcoin';minSdk 21;targetSdk 34;versionCode 7;versionName '1.0'}\n buildTypes{release{minifyEnabled false}}\n}\n" > app/build.gradle
+          printf "package com.kalapagenep.bcoin;\nimport android.app.Activity;\nimport android.os.Bundle;\nimport android.webkit.WebView;\nimport android.webkit.WebViewClient;\npublic class MainActivity extends Activity {\n protected void onCreate(Bundle b){super.onCreate(b); WebView w=new WebView(this); w.getSettings().setJavaScriptEnabled(true); w.getSettings().setDomStorageEnabled(true); w.setWebViewClient(new WebViewClient()); w.loadUrl(\"https://wtanta84-rgb.github.io/bcoin-kalapagenep/\"); setContentView(w);} \n}\n" > app/src/main/java/com/kalapagenep/bcoin/MainActivity.java
           mkdir -p app/src/main
-          cat > app/src/main/AndroidManifest.xml << 'MAN'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET"/>
-              <application android:label="B-Coin Kalapagenep" android:theme="@android:style/Theme.NoTitleBar">
-                  <activity android:name=".MainActivity" android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          MAN
+          printf '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:label="B-Coin Kalapagenep" android:theme="@android:style/Theme.NoTitleBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
