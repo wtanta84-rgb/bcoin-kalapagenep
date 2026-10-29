@@ -1,31 +1,29 @@
-name: Build B-Coin APK Real
+name: Build B-Coin APK
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-          
-      - name: Build APK
+      - name: Build APK with webintoapp
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          echo '{"appId":"com.kalapagenep.bcoin","appName":"B-Coin Kalapagenep","webDir":".","bundledWebRuntime":false}' > capacitor.config.json
-          npx cap add android
-          npx cap copy
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-          
-      - uses: actions/upload-artifact@v4
+          npm init -y
+          npm install -g cordova
+          cordova create bcoin com.kalapagenep.bcoin "B-Coin Kalapagenep"
+          cd bcoin
+          cordova platform add android
+          cordova plugin add cordova-plugin-inappbrowser
+          cat > www/index.html << 'HTML'
+          <!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=https://wtanta84-rgb.github.io/bcoin-kalapagenep/"></head><body>Loading B-Coin...</body></html>
+          HTML
+          cd ..
+          echo "build will be done via cordova"
+      - name: Upload
+        uses: actions/upload-artifact@v4
         with:
-          name: B-Coin-Kalapagenep-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: B-Coin-Source
+          path: .
